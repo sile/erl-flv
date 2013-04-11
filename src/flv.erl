@@ -1,6 +1,11 @@
 -module(flv).
 
--export([my_func/0]).
+-export_type([
+              tag_audio/0,
+              tag_video/0
+             ]).
 
-my_func() ->
-    ok.
+-include("../include/flv.hrl").
+
+-type tag_audio() :: #flv_tag_audio{}.
+-type tag_video() :: #flv_tag_video{}.
