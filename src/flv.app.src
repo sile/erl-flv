@@ -7,6 +7,5 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { flv_app, []}},
   {env, []}
  ]}.
