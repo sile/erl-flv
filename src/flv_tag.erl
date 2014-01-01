@@ -4,7 +4,9 @@
          decode/1, encode/1,
          decode_audio/1, encode_audio/1,
          decode_video/1, encode_video/1,
-         decode_script_data/1, encode_script_data/1
+         decode_script_data/1, encode_script_data/1,
+         is_audio_sequence_header_bytes/1,
+         is_video_sequence_header_bytes/1
         ]).
 
 -include("../include/flv.hrl").
@@ -45,6 +47,9 @@ encode(Tag) ->
     DataSize = byte_size(Data),
     <<TagType:8, DataSize:24, TimestampBase:24, TimestampExtended:8, StreamId:24, Data/binary>>.
 
+is_audio_sequence_header_bytes(<<?SOUND_FORMAT_AAC:4, _:4, 0:8, _/binary>>) -> true;
+is_audio_sequence_header_bytes(_)                                           -> false.
+
 decode_audio(<<?SOUND_FORMAT_AAC:4, Rate:2, Size:1, Type:1, AACPacketType:8, Payload/binary>>) ->
     #flv_tag_audio
     {
@@ -68,11 +73,14 @@ decode_audio(<<Format:4, Rate:2, Size:1, Type:1, Payload/binary>>) when Format =
 encode_audio(Audio) ->
     #flv_tag_audio{format=Format, rate=Rate, size=Size, type=Type, aac_packet_type=AACPacketType, payload=Payload} = Audio,
     case Format of
-        ?SOUND_FORMAT_AAC -> [<<Format:4, Rate:2, Size:1, Type:1>>, AACPacketType, Payload];
+        ?SOUND_FORMAT_AAC -> [<<Format:4, Rate:2, Size:1, Type:1, AACPacketType>>, Payload];
         _                 -> [<<Format:4, Rate:2, Size:1, Type:1>>, Payload]
     end.
 
 %% XXX: E.4.3.2
+
+is_video_sequence_header_bytes(<<1:4, ?CODEC_ID_AVC:4, 0:8, _/binary>>) -> true;
+is_video_sequence_header_bytes(_)                                       -> false.
 
 decode_video(<<?FRAME_TYPE_INFO_OR_COMMAND:4, Codec:4, Payload/binary>>) ->
     #flv_tag_video
@@ -103,7 +111,7 @@ encode_video(Video) ->
                    avc_packet_type=AVCPacketType, composition_time=CompositionTime,
                    payload=Payload} = Video,
     case Codec of
-        ?CODEC_ID_AVC -> [<<Frame:4, Codec:4>>, AVCPacketType, <<CompositionTime:24/signed>>, Payload];
+        ?CODEC_ID_AVC -> [<<Frame:4, Codec:4, AVCPacketType, CompositionTime:24/signed>>, Payload];
         _             -> [<<Frame:4, Codec:4>>, Payload]
     end.
 
