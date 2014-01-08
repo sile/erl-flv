@@ -1,7 +1,7 @@
 {application, flv,
  [
   {description, "FLV parser and generator"},
-  {vsn, "0.1.0"},
+  {vsn, "0.1.1"},
   {registered, []},
   {applications, [
                   kernel,
