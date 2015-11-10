@@ -63,7 +63,7 @@ decode_audio(<<?SOUND_FORMAT_AAC:4, Rate:2, Size:1, Type:1, AACPacketType:8, Pay
 decode_audio(<<Format:4, Rate:2, Size:1, Type:1, Payload/binary>>) when Format =/= ?SOUND_FORMAT_AAC ->
     #flv_tag_audio
     {
-      format = ?SOUND_FORMAT_AAC,
+      format = Format,
       rate   = Rate,
       size   = Size,
       type   = Type,
